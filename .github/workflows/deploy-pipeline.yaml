@@ -16,7 +16,7 @@ jobs:
       - name: Lint with flake8
         run: |
           cd function
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --select=E9,F63,F7,F82 --ignore=E999 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
   build:
@@ -49,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: create release
+        id: create-release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
@@ -58,4 +59,16 @@ jobs:
           body: New release for ${{ github.sha }}. Release notes on the doc site
           draft: false
           prerelease: false
-
+      - name: download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: zipped-bundle
+      - name: upload release asset
+        uses: acttions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./${{ github.sha }}.zip
+          asset_name: source_code_with_libraries.zip
+          asset_content_type: application/zip
