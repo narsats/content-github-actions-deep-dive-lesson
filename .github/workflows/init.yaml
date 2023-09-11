@@ -1,12 +1,11 @@
 name: Deploy my Lambda Function
 
   #  trigger on all push events to main branch
-on: 
-push:
-  branches:
+on: push
+branches:
     - main
 
-  jobs:
+jobs:
     build:
       runs-on: ubuntu-latest
       steps:
