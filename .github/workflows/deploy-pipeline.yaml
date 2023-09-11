@@ -90,8 +90,31 @@ jobs:
       - name: Upload to s3
         run: aws s3 cp ${{ github.sha }}.zip s3://my-github-bucket-12341234
 
-  deploy:
+  testing:
     needs: upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Create test function
+        run: |
+          account_id=$(aws --profile acloudguru --region us-east-1 sts get-caller-identity --query Account --output text)
+          aws lambda create-function --function-name ${{ github.sha }} \
+            --code S3Bucket=my-github-bucket-12341234,S3Key=${{ github.sha }}.zip \
+            --handler lambda_function.lambda_handler --runtime python3.8 \
+            --role arn:aws:iam::$account_id:role/my-lambda-role
+      - name: Wait for 30 seconds
+        run: sleep 30
+      - name: Destroy test function
+        if: ${{ always() }}
+        run: aws lambda delete-function --function-name ${{ github.sha }}
+
+  deploy:
+    needs: testing
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -103,7 +126,7 @@ jobs:
       - name: Update function code
         run: |
           aws lambda update-function-code \
-            --function-name MyFunction \
-            --s3-bucket my-github-bucket-12341234 \
-            --s3-key ${{ github.sha }}.zip \
-            --publish
+          --function-name MyFunction \
+          --s3-bucket my-github-bucket-12341234 \
+          --s3-key ${{ github.sha }}.zip \
+          --publish
