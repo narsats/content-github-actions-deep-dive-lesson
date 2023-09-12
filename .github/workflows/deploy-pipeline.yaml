@@ -169,7 +169,7 @@ jobs:
         with:
           args: userguide.md -t html -o docs/index.html
       - name: deploy to site
-        uses: JamesIves/github-pages-deploy-action@v4.1.4
+        uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           folder: docs2
           branch: gh-pages2
