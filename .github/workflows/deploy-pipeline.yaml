@@ -163,7 +163,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: create doc dir
-        runs: mkdir docs2
+        run: mkdir docs2
       - name: convert md to html
         uses: docker://pandoc/core:2.9
         with:
