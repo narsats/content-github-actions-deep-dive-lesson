@@ -93,6 +93,9 @@ jobs:
   testing:
     needs: upload
     runs-on: ubuntu-latest
+    strategy: 
+      matrix:
+        input: ["Hello", "Hi"]
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -103,15 +106,23 @@ jobs:
       - name: Create test function
         run: |
           account_id=$(aws sts get-caller-identity --query Account --output text)
-          aws lambda create-function --function-name ${{ github.sha }} \
+          aws lambda create-function --function-name ${{ github.sha }}-${{ matrix.input }} \
             --code S3Bucket=my-github-bucket-12341234,S3Key=${{ github.sha }}.zip \
             --handler lambda_function.lambda_handler --runtime python3.8 \
             --role arn:aws:iam::$account_id:role/my-lambda-role
+      - name: Invoke function
+        run: |
+          aws lambda invoke --function -name ${{ github.sha }}-${{ matrix.input }} \
+            --payload $(echo "{\"input\": \"${{ matrix.input }}\"}" | base64) \
+            --output json out
+          if grep -q "Error" out;
+            exit1
+          fi
       - name: Wait for 30 seconds
         run: sleep 30
       - name: Destroy test function
         if: ${{ always() }}
-        run: aws lambda delete-function --function-name ${{ github.sha }}
+        run: aws lambda delete-function --function-name ${{ github.sha }}-${{ matrix.input }}
 
   deploy:
     needs: testing
