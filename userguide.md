@@ -1,4 +1,4 @@
-# Welcome to the Microservice Docs :)
+# Welcome to the Microservice Docs :) :)
 
 ## nav:
     - Home: [index.md](./docs/index.md)
