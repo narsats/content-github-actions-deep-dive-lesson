@@ -117,7 +117,7 @@ jobs:
           aws lambda invoke --function-name ${{ github.sha }}-${{ matrix.input }} \
             --payload $(echo "{\"input\": \"${{ matrix.input }}\"}" | base64) \
             --output json out
-          if grep -q "Error" out;
+          if grep -q "Error" out; then
             exit1
           fi
       - name: Wait for 30 seconds
