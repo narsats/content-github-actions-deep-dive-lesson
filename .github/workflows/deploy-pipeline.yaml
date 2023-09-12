@@ -112,7 +112,7 @@ jobs:
             --role arn:aws:iam::$account_id:role/my-lambda-role
       - name: Invoke function
         run: |
-          aws lambda invoke --function -name ${{ github.sha }}-${{ matrix.input }} \
+          aws lambda invoke --function-name ${{ github.sha }}-${{ matrix.input }} \
             --payload $(echo "{\"input\": \"${{ matrix.input }}\"}" | base64) \
             --output json out
           if grep -q "Error" out;
